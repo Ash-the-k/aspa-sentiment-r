@@ -1,0 +1,6 @@
+dir.create("data", showWarnings = FALSE)
+dir.create("scripts", showWarnings = FALSE)
+dir.create("models", showWarnings = FALSE)
+dir.create("figures", showWarnings = FALSE)
+dir.create("reports", showWarnings = FALSE)
+dir.create("notebooks", showWarnings = FALSE)
