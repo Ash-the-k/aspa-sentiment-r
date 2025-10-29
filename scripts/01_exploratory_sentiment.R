@@ -220,38 +220,52 @@ message("Saved sentiment histogram comparison: sentiment_hist_lexicons.png")
 # requires ggtext
 if (!requireNamespace("ggtext", quietly = TRUE)) {
   message("ggtext not found. Install with: install.packages('ggtext') to get boxed title/subtitle styling.")
-  library(ggtext)  # will error if not installed, but user sees message
+  library(ggtext)
 } else {
   library(ggtext)
 }
 
-dist_bing <- as.data.frame(table(sentiment_df$label_bing))
-names(dist_bing) <- c("label","count")
-dist_bing <- dist_bing %>% arrange(desc(count))
+# ensure all three sentiment labels exist (even if count = 0)
+raw_dist <- as.data.frame(table(sentiment_df$label_bing), stringsAsFactors = FALSE)
+names(raw_dist) <- c("label", "count")
+all_labels <- c("positive", "neutral", "negative")
+
+# Use complete from tidyr to ensure all categories exist
+dist_bing <- tidyr::complete(raw_dist, label = all_labels, fill = list(count = 0))
+
+# Make sure label is a factor with all levels
+dist_bing$label <- factor(dist_bing$label, levels = all_labels)
+
+# compute percentages
 dist_bing$percent <- round(100 * dist_bing$count / sum(dist_bing$count), 1)
 dist_bing$label_pct <- paste0(dist_bing$label, " (", dist_bing$percent, "%)")
 
-# color palette (enough colors for up to 10 categories safely)
-fill_cols <- RColorBrewer::brewer.pal(max(3, nrow(dist_bing)), "Dark2")
+# explicit palette for the three fixed labels
+fill_cols <- c("positive" = "#1B9E77", "neutral" = "#D95F02", "negative" = "#7570B3")
 
 p_pie_bing_boxed <- ggplot(dist_bing, aes(x = "", y = count, fill = label)) +
   geom_bar(width = 1, stat = "identity", color = "white", linewidth = 0.4) +
   coord_polar(theta = "y") +
   geom_label(
+    data = subset(dist_bing, count > 0),  # Only label slices with data
     aes(label = paste0(percent, "%")),
     position = position_stack(vjust = 0.5),
     size = 4.2, fontface = "bold",
     color = "black",
-    fill = alpha("white", 0.95),   # near-opaque white box behind each slice label
+    fill = alpha("white", 0.95),
     label.size = 0.25,
     label.r = unit(4, "pt")
   ) +
-  scale_fill_manual(values = fill_cols) +
+  scale_fill_manual(
+    values = fill_cols, 
+    breaks = all_labels,  # Force all labels to appear
+    drop = FALSE          # Don't drop unused levels
+  ) +
   theme_void() +
   labs(
     title = "Sentiment Distribution (Bing lexicon)",
     subtitle = "Percentages of positive, neutral, and negative reviews",
-    fill = "Sentiment"
+    fill = ""
   ) +
   theme(
     # boxed title (semi-opaque white chip)
@@ -268,18 +282,12 @@ p_pie_bing_boxed <- ggplot(dist_bing, aes(x = "", y = count, fill = label)) +
     ),
     legend.position = "bottom",
     legend.direction = "horizontal",
-    legend.title = ggtext::element_textbox_simple(
-      size = 10, face = "bold",
-      fill = alpha("white", 0.95), color = "black", r = unit(3, "pt"),
-      padding = margin(2, 4, 2, 4)
-    ),
-    legend.text = ggtext::element_textbox_simple(
-      size = 10,
-      fill = alpha("white", 0.9), color = "black", r = unit(3, "pt"),
-      padding = margin(1, 3, 1, 3)
-    ),
+    legend.title = element_blank(),  # Remove title since fill = ""
+    legend.text = element_text(size = 11),  # Use regular text element
+    legend.key.size = unit(1, "cm"),
     plot.margin = margin(10, 10, 10, 10)
-  )
+  ) +
+  guides(fill = guide_legend(override.aes = list(size = 5)))
 
 # save with white background for global readability
 ggsave(
@@ -287,7 +295,6 @@ ggsave(
   p_pie_bing_boxed,
   width = 7, height = 7, dpi = 300, bg = "white"
 )
-
 message("Saved boxed pie chart with white background: sentiment_distribution_bing.png")
 
 
