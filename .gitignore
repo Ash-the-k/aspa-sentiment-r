@@ -1,43 +1,50 @@
-# ========== R & RStudio ==========
+# ------------------------------
+# RStudio / R environment files
+# ------------------------------
 .Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
 .Rapp.history
+.DS_Store
 
-# renv (keep lockfile, ignore local libs)
+# ------------------------------
+# renv (we keep renv.lock but ignore cache)
+# ------------------------------
 renv/library/
 renv/staging/
+renv/python/
+renv/settings.dcf
 
-# ========== Temporary or system files ==========
-.DS_Store
-Thumbs.db
+# ------------------------------
+# Temporary / system / logs
+# ------------------------------
 *.tmp
-~$*
-
-# ========== Logs & cache ==========
 *.log
-*.Rout
-*.RDataTmp
-.Rproj.user/
+*.bak
+__pycache__/
+*.swp
 
-# ========== Models & large generated objects ==========
-# You can un-comment these if model binaries get too big
-# models/*.rds
-# models/*.RDS
+# ------------------------------
+# Data handling
+# ------------------------------
+# Keep CSVs (your data is small)
+# Ignore any temporary exports or zips
+*.zip
+*.tar
+*.gz
 
-# ========== Data (optional; keep sample CSVs small) ==========
-# data/*
+# ------------------------------
+# Figures & Reports
+# ------------------------------
+# Keep important result figures, ignore heavy experiment runs
+figures/*.tmp.png
+reports/*.html
+reports/*.pdf
 
-# ========== Reports & Figures ==========
-# keep these tracked, since they’re part of deliverables
-# if you generate temporary intermediate reports, ignore only those:
-reports/test_predictions.csv
-
-# ========== Notebooks checkpoints (if you ever use Jupyter / Rmd checkpoints) ==========
-.ipynb_checkpoints/
-.Rcheck/
-
-# ========== VSCode / Other IDEs (optional future-proofing) ==========
-.vscode/
-.idea/
+# ------------------------------
+# Models
+# ------------------------------
+# Keep trained models under version control (they’re small)
+# Ignore temporary checkpoints if you ever generate them
+models/*.tmp.rds
